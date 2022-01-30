@@ -8,13 +8,6 @@ analyser.maxDecibels = -10;
 analyser.smoothingTimeConstant = .25;
 analyser.fftSize = 1 << 15;
 
-navigator.mediaDevices.getUserMedia({audio : {channelCount : {ideal : 1}}})
-    .then(function(stream) {
-      var source = audioCtx.createMediaStreamSource(stream);
-      source.connect(analyser);
-    })
-    .catch(function(err) { console.log('The following getUserMedia error occured: ' + err); });
-
 const t = new Float32Array(analyser.fftSize);
 const f = new Float32Array(analyser.frequencyBinCount);  // half the length as t
 const deltaFreq = 0.5 * audioCtx.sampleRate / analyser.frequencyBinCount;
@@ -22,7 +15,21 @@ const deltaTime = 1 / audioCtx.sampleRate;
 const faxis = Array.from(Array(analyser.frequencyBinCount), (_, i) => i * deltaFreq);
 const taxis = Array.from(Array(analyser.fftSize), (_, i) => i * deltaTime);
 
+let asked = false;
+function ask() {
+  navigator.mediaDevices.getUserMedia({audio : {channelCount : {ideal : 1}}})
+      .then(function(stream) {
+        var source = audioCtx.createMediaStreamSource(stream);
+        source.connect(analyser);
+      })
+      .catch(function(err) { console.log('The following getUserMedia error occured: ' + err); });
+}
+
 function record() {
+  if (!asked) {
+    ask();
+    asked = true;
+  }
   analyser.getFloatTimeDomainData(t);
   analyser.getFloatFrequencyData(f);
 
