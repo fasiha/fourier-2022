@@ -44,3 +44,9 @@ function viz() {
   Plotly.newPlot('freq', [ {y : Array.from(f), x : faxis} ]);
   Plotly.newPlot('time', [ {y : Array.from(t), x : taxis} ]);
 }
+
+{
+  document.querySelector('#record-button')?.addEventListener('click', () => record());
+  document.querySelector('#play-button')?.addEventListener('click', () => play());
+  document.querySelector('#viz-button')?.addEventListener('click', () => viz());
+}
