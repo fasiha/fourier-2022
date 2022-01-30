@@ -5,7 +5,7 @@ const audioCtx: AudioContext = new (window.AudioContext || (window as any).webki
 const analyser = audioCtx.createAnalyser();
 analyser.minDecibels = -90;
 analyser.maxDecibels = -10;
-analyser.smoothingTimeConstant = 0;
+analyser.smoothingTimeConstant = .25;
 analyser.fftSize = 1 << 15;
 
 navigator.mediaDevices.getUserMedia({audio : {channelCount : {ideal : 1}}})
@@ -26,7 +26,7 @@ function record() {
   analyser.getFloatTimeDomainData(t);
   analyser.getFloatFrequencyData(f);
 
-  console.dir({t : [ Math.min(...t), Math.max(...t) ], f : [ Math.min(...f), Math.max(...f) ]});
+  viz();
 }
 
 function play() {
@@ -41,12 +41,11 @@ function play() {
 }
 
 function viz() {
-  Plotly.newPlot('freq', [ {y : Array.from(f), x : faxis} ]);
+  Plotly.newPlot('freq', [ {y : Array.from(f), x : faxis} ], {xaxis : {type : 'log', autorange : true}});
   Plotly.newPlot('time', [ {y : Array.from(t), x : taxis} ]);
 }
 
 {
   document.querySelector('#record-button')?.addEventListener('click', () => record());
   document.querySelector('#play-button')?.addEventListener('click', () => play());
-  document.querySelector('#viz-button')?.addEventListener('click', () => viz());
 }
