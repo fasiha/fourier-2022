@@ -1,3 +1,5 @@
+var Plotly: any;
+
 const audioCtx: AudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
 
 const analyser = audioCtx.createAnalyser();
@@ -14,7 +16,11 @@ navigator.mediaDevices.getUserMedia({audio : {channelCount : {ideal : 1}}})
     .catch(function(err) { console.log('The following getUserMedia error occured: ' + err); });
 
 const t = new Float32Array(analyser.fftSize);
-const f = new Float32Array(analyser.fftSize);
+const f = new Float32Array(analyser.frequencyBinCount);  // half the length as t
+const deltaFreq = 0.5 * audioCtx.sampleRate / analyser.frequencyBinCount;
+const deltaTime = 1 / audioCtx.sampleRate;
+const faxis = Array.from(Array(analyser.frequencyBinCount), (_, i) => i * deltaFreq);
+const taxis = Array.from(Array(analyser.fftSize), (_, i) => i * deltaTime);
 
 function record() {
   analyser.getFloatTimeDomainData(t);
@@ -32,4 +38,9 @@ function play() {
   newSource.buffer = newBuf;
   newSource.connect(audioCtx.destination);
   newSource.start(0);
+}
+
+function viz() {
+  Plotly.newPlot('freq', [ {y : Array.from(f), x : faxis} ]);
+  Plotly.newPlot('time', [ {y : Array.from(t), x : taxis} ]);
 }
